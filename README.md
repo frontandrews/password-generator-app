@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Password Generator App
 
-## Getting Started
+## Overview
 
-First, run the development server:
+This Password Generator App is a React-based project designed to help users generate strong and secure passwords based on a set of custom rules. With a sleek UI powered by Tailwind CSS, this app gives users the flexibility to generate passwords containing uppercases, numbers, and special characters. The generated password can be copied to the clipboard or downloaded as a text file.
+
+![App Screenshot](./public//password-generator.png)
+
+## Features
+
+- Generate a password based on user-selected options:
+  - Include Uppercase
+  - Include Numbers
+  - Include Special Characters
+  - Numbers Only
+  - Letters Only
+- Adjustable password length
+- Password strength indicator
+- Download generated password as a text file
+- Copy the password to clipboard
+
+## Tech Stack
+
+- React
+- NextJS
+- Typescript
+- Tailwind CSS
+- React-icons (for the icon assets)
+
+## Setup & Installation
+
+Clone the repository
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/your-username/password-generator-app.git
+
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Navigate to the project directory
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+cd password-generator-app
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+```
 
-## Learn More
+Install dependencies
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm install
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+Run the app
 
-## Deploy on Vercel
+```bash
+npm npm start
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+```

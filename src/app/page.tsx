@@ -1,113 +1,269 @@
-import Image from 'next/image'
+"use client";
+import React, { useState } from "react";
+import { FaCopy, FaDownload } from "react-icons/fa";
 
-export default function Home() {
+interface Options {
+  uppercase: boolean;
+  numbers: boolean;
+  special: boolean;
+  numbersOnly: boolean;
+  lettersOnly: boolean;
+}
+
+const generatePassword = (length: number, options: Options): string => {
+  const lowercaseChars = "abcdefghijklmnopqrstuvwxyz";
+  const uppercaseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const numberChars = "0123456789";
+  const specialChars = "!@#$%^&*()_-+=<>?";
+
+  if (options.numbersOnly)
+    return Array.from(
+      { length },
+      () => numberChars[Math.floor(Math.random() * numberChars.length)]
+    ).join("");
+  if (options.lettersOnly)
+    return Array.from(
+      { length },
+      () => lowercaseChars[Math.floor(Math.random() * lowercaseChars.length)]
+    ).join("");
+
+  let possibleChars = lowercaseChars;
+
+  if (options.uppercase) possibleChars += uppercaseChars;
+  if (options.numbers) possibleChars += numberChars;
+  if (options.special) possibleChars += specialChars;
+
+  let password = "";
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * possibleChars.length);
+    password += possibleChars[randomIndex];
+  }
+  return password;
+};
+
+const copyToClipboard = (text: string) => {
+  navigator.clipboard.writeText(text);
+};
+
+function App() {
+  const [password, setPassword] = useState("");
+  const [minLength, setMinLength] = useState(8);
+  const [maxLength, setMaxLength] = useState(16);
+  const [options, setOptions] = useState({
+    uppercase: true,
+    numbers: true,
+    special: true,
+    numbersOnly: false,
+    lettersOnly: false,
+  });
+  const [strength, setStrength] = useState("Weak");
+
+  const isOtherOptionsDisabled = options.numbersOnly || options.lettersOnly;
+
+  const downloadPassword = () => {
+    const blob = new Blob([password], { type: "text/plain" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "password.txt";
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const measureStrength = (password: string) => {
+    if (
+      password.length >= 12 &&
+      /[A-Z]/.test(password) &&
+      /[0-9]/.test(password) &&
+      /[!@#$%^&*()_\-+=<>?]/.test(password)
+    ) {
+      return "Very Strong";
+    }
+    if (
+      password.length >= 8 &&
+      /[A-Z]/.test(password) &&
+      /[0-9]/.test(password)
+    ) {
+      return "Strong";
+    }
+    if (password.length >= 6) {
+      return "Medium";
+    }
+    return "Weak";
+  };
+  const [isAdvancedOptionsVisible, setAdvancedOptionsVisible] = useState(false);
+  const toggleAdvancedOptions = () =>
+    setAdvancedOptionsVisible(!isAdvancedOptionsVisible);
+
+  const handleGeneratePassword = () => {
+    const randomLength = Math.floor(
+      Math.random() * (maxLength - minLength + 1) + minLength
+    );
+
+    const password = generatePassword(randomLength, options);
+    setPassword(password);
+    setStrength(measureStrength(password));
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
+    <div className="App flex flex-col items-center justify-center min-h-screen bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-md w-96 border-2 border-gray-300">
+        <h1 className="text-3xl font-bold mb-6 text-center">
+          Password Generator
+        </h1>
+        <div className="flex flex-col items-start mb-4">
+          <label className="flex items-center mb-2">
+            <input
+              type="checkbox"
+              className="mr-2"
+              checked={options.uppercase}
+              onChange={() =>
+                setOptions({ ...options, uppercase: !options.uppercase })
+              }
+              disabled={isOtherOptionsDisabled}
             />
-          </a>
+            Include Uppercase
+          </label>
+          <label className="flex items-center mb-2">
+            <input
+              type="checkbox"
+              className="mr-2"
+              checked={options.numbers}
+              onChange={() =>
+                setOptions({ ...options, numbers: !options.numbers })
+              }
+              disabled={isOtherOptionsDisabled}
+            />
+            Include Numbers
+          </label>
+          <label className="flex items-center mb-2">
+            <input
+              type="checkbox"
+              className="mr-2"
+              checked={options.special}
+              onChange={() =>
+                setOptions({ ...options, special: !options.special })
+              }
+              disabled={isOtherOptionsDisabled}
+            />
+            Include Special Characters
+          </label>
+          <div className="flex flex-1 text-right">
+            <button
+              onClick={toggleAdvancedOptions}
+              className="text-right flex items-center"
+            >
+              Advanced Options
+              {isAdvancedOptionsVisible ? "▲" : "▼"}
+            </button>
+          </div>
+          {isAdvancedOptionsVisible && (
+            <div className="advanced-options">
+              <label className="flex items-center mb-2">
+                <input
+                  type="checkbox"
+                  className="mr-2"
+                  checked={options.numbersOnly}
+                  onChange={() =>
+                    setOptions({
+                      ...options,
+                      numbersOnly: !options.numbersOnly,
+                    })
+                  }
+                  disabled={options.lettersOnly}
+                />
+                Numbers Only
+              </label>
+              <label className="flex items-center mb-2">
+                <input
+                  type="checkbox"
+                  className="mr-2"
+                  checked={options.lettersOnly}
+                  onChange={() =>
+                    setOptions({
+                      ...options,
+                      lettersOnly: !options.lettersOnly,
+                    })
+                  }
+                  disabled={options.numbersOnly}
+                />
+                Letters Only
+              </label>
+              <div className="flex flex-col">
+                <label>Min Length</label>
+                <input
+                  className="border rounded px-1"
+                  type="number"
+                  value={minLength}
+                  onChange={(e) => setMinLength(parseInt(e.target.value))}
+                />
+              </div>
+              <div className="flex flex-col">
+                <label>Max Length</label>
+                <input
+                  className="border rounded px-1"
+                  type="number"
+                  value={maxLength}
+                  onChange={(e) => setMaxLength(parseInt(e.target.value))}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none focus:border-blue-700 focus:ring focus:ring-blue-200 mb-4"
+          onClick={handleGeneratePassword}
+        >
+          Generate Password
+        </button>
+        {password && (
+          <div>
+            <div className="flex justify-between items-center border rounded px-3">
+              <input
+                type="text"
+                value={password}
+                className="text-lg flex-1 py-2  cursor-text focus:ring-0 focus:outline-none focus:border-none"
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setStrength(measureStrength(e.target.value));
+                }}
+              />
+              <button
+                onClick={() => copyToClipboard(password)}
+                className="text-blue-600 hover:text-blue-800"
+              >
+                <FaCopy />
+              </button>
+            </div>
+            <p>
+              Strength:{" "}
+              <span
+                className={
+                  strength === "Very Strong"
+                    ? "text-green-500"
+                    : strength === "Strong"
+                    ? "text-yellow-500"
+                    : "text-red-500"
+                }
+              >
+                {strength}
+              </span>
+            </p>
+          </div>
+        )}
+
+        <div className="text-right">
+          <button
+            className="bg-neutral-100 text-dark border border-neutral-300 px-2 py-2 rounded focus:ring focus:ring-green-200 mb-4"
+            onClick={downloadPassword}
+          >
+            <FaDownload />
+          </button>
         </div>
       </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore the Next.js 13 playground.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+    </div>
+  );
 }
+
+export default App;
